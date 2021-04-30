@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}
-  namespace: {{.Values.ratings.namespace}}
+  namespace: {{ .Values.ratings.namespace }}
   labels:
     app: {{ .Release.Name }}
 spec:
@@ -25,22 +25,18 @@ spec:
           protocol: TCP
         livenessProbe:
           httpGet:
-            path: {{ .Values.ratings.health }}
+            path: /health
             port: {{ .Values.ratings.port }}
             scheme: HTTP
         readinessProbe:
           httpGet:
-            path: {{ .Values.ratings.health }}
-            port: {{ .Values.ratings.port }} 
+            path: {{ .Values.ratings.healthCheckPath }}
+            port: {{ .Values.ratings.port }}
             scheme: HTTP
         env:
-        {{- if .Values.extraEnv }}
-        env:
-        {{- range $key, $value := .Values.extraEnv }}
-        - name: {{ $key }}
-          value: {{ $value | quote }}
-        {{- end }}
-        {{- end }}
+        - name: SERVICE_VERSION
+          value: {{ .Values.extraEnv.SERVICE_VERSION }}
+        - name: MONGO_DB_URL
+          value: {{ .Values.extraEnv.MONGO_DB_URL }}
       imagePullSecrets:
-      - name: {{ .Values.ratings.imagePullSecrets }}
-      
+      - name: registry-bookinfo
